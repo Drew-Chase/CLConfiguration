@@ -1,7 +1,5 @@
 ﻿using ChaseLabs.CLConfiguration.Interfaces;
 using ChaseLabs.CLConfiguration.List;
-using System;
-using System.IO;
 
 namespace ChaseLabs.CLConfiguration.Object
 {
@@ -15,20 +13,18 @@ namespace ChaseLabs.CLConfiguration.Object
     /// </summary>
     public class Config : IConfig
     {
+        private string _value;
+        private readonly string _key;
 
-        string _value, _key;
         public string Key => _key;
         public string Value
         {
-            get
-            {
-                return _value;
-            }
+            get => _value;
             set
             {
 
                 _value = value;
-                Configs.Singleton.Write();
+                ConfigManager.Singleton.Write();
             }
         }
 

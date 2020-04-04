@@ -14,14 +14,18 @@ namespace ChaseLabs.CLConfiguration.List
     /// Company: Chase Labs
     /// </para>
     /// </summary>
-    public class Configs
+    public class ConfigManager
     {
-        static Configs _singleton;
-        public static Configs Singleton
+        private static ConfigManager _singleton;
+        public static ConfigManager Singleton
         {
             get
             {
-                if (_singleton == null) _singleton = new Configs();
+                if (_singleton == null)
+                {
+                    _singleton = new ConfigManager();
+                }
+
                 return _singleton;
             }
         }
@@ -30,7 +34,7 @@ namespace ChaseLabs.CLConfiguration.List
         private List<Config> ConfigList;
         public string PATH { get; set; }
 
-        protected Configs() { }
+        protected ConfigManager() { }
 
         public void Init(string _path)
         {
@@ -62,13 +66,23 @@ namespace ChaseLabs.CLConfiguration.List
                         key = txt.Split(':')[0];
                         for (int i = 0; i < txt.Split(':').Length; i++)
                         {
-                            if (i == 0) continue;
+                            if (i == 0)
+                            {
+                                continue;
+                            }
+
                             value += txt.Split(':')[i];
-                            if (i != txt.Split(':').Length - 1) value += ":";
+                            if (i != txt.Split(':').Length - 1)
+                            {
+                                value += ":";
+                            }
                         }
                     }
                     else
+                    {
                         return;
+                    }
+
                     Add(new Config(key.Replace("\"", "").Replace(": ", "").Replace(" \"", ""), value.Replace(": ", "").Replace("\" ", "").Replace(" \"", "").Replace("\"", "")));
                 }
 
@@ -104,7 +118,10 @@ namespace ChaseLabs.CLConfiguration.List
         public void Add(Config config)
         {
             if (GetConfigByKey(config.Key) == null)
+            {
                 ConfigList.Add(config);
+            }
+
             Write();
         }
 
@@ -169,7 +186,7 @@ namespace ChaseLabs.CLConfiguration.List
             {
                 using (StreamWriter writer = new StreamWriter(PATH))
                 {
-                    foreach (var config in ConfigList)
+                    foreach (Config config in ConfigList)
                     {
                         writer.WriteLine($"\"{config.Key}\": \"{config.Value}\"");
                     }
