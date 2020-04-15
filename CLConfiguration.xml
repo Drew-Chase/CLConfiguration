@@ -14,11 +14,6 @@
             </para>
             </summary>
         </member>
-        <member name="P:ChaseLabs.CLConfiguration.List.ConfigManager.Singleton">
-            <summary>
-            Singleton Instance of the Config Manager Class
-            </summary>
-        </member>
         <member name="P:ChaseLabs.CLConfiguration.List.ConfigManager.Name">
             <summary>
             Sets the Name of the Config
@@ -37,14 +32,6 @@
             <summary>
             Returns the Current Path of the Config File
             </summary>
-        </member>
-        <member name="M:ChaseLabs.CLConfiguration.List.ConfigManager.Init(System.String)">
-            <summary>
-            Initializes the Config Manager with a Config File Path
-            <para>Example:</para>
-            <code>Init("c:\temp\default.cfg")</code>
-            </summary>
-            <param name="_path"></param>
         </member>
         <member name="M:ChaseLabs.CLConfiguration.List.ConfigManager.FindPreExistingConfigs">
             <summary>
@@ -83,6 +70,13 @@
             Adds a Config Input by Config Object
             </summary>
             <param name="config"></param>
+        </member>
+        <member name="M:ChaseLabs.CLConfiguration.List.ConfigManager.Add(System.String,System.String)">
+            <summary>
+            Adds a Config to this ConfigManager using the Key and Value
+            </summary>
+            <param name="key"></param>
+            <param name="value"></param>
         </member>
         <member name="M:ChaseLabs.CLConfiguration.List.ConfigManager.Remove(ChaseLabs.CLConfiguration.Object.Config)">
             <summary>
@@ -156,7 +150,7 @@
             Returns the Configs Value
             </summary>
         </member>
-        <member name="M:ChaseLabs.CLConfiguration.Object.Config.#ctor(System.String,System.String)">
+        <member name="M:ChaseLabs.CLConfiguration.Object.Config.#ctor(System.String,System.String,ChaseLabs.CLConfiguration.List.ConfigManager)">
             <summary>
             Creates a Config Object with Key and Value
             </summary>

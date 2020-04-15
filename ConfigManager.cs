@@ -16,23 +16,6 @@ namespace ChaseLabs.CLConfiguration.List
     /// </summary>
     public class ConfigManager
     {
-        private static ConfigManager _singleton;
-        /// <summary>
-        /// Singleton Instance of the Config Manager Class
-        /// </summary>
-        public static ConfigManager Singleton
-        {
-            get
-            {
-                if (_singleton == null)
-                {
-                    _singleton = new ConfigManager();
-                }
-
-                return _singleton;
-            }
-        }
-
         /// <summary>
         /// Sets the Name of the Config
         /// <para>Good if You have multiple Configs</para>
@@ -52,21 +35,18 @@ namespace ChaseLabs.CLConfiguration.List
 
 
         private List<Config> ConfigList;
+
         private string _path;
         /// <summary>
         /// Returns the Current Path of the Config File
         /// </summary>
         public string PATH => _path;
 
-        private ConfigManager() { }
-
         /// <summary>
-        /// Initializes the Config Manager with a Config File Path
-        /// <para>Example:</para>
-        /// <code>Init("c:\temp\default.cfg")</code>
+        /// Initializes the Config Manager with a File Path
         /// </summary>
         /// <param name="_path"></param>
-        public void Init(string _path)
+        public ConfigManager(string _path)
         {
             ConfigList = new List<Config>();
             this._path = _path;
@@ -122,7 +102,7 @@ namespace ChaseLabs.CLConfiguration.List
                         return;
                     }
 
-                    Add(new Config(key.Replace("\"", "").Replace(": ", "").Replace(" \"", ""), value.Replace(": ", "").Replace("\" ", "").Replace(" \"", "").Replace("\"", "")));
+                    Add(key.Replace("\"", "").Replace(": ", "").Replace(" \"", ""), value.Replace(": ", "").Replace("\" ", "").Replace(" \"", "").Replace("\"", ""));
                 }
 
                 reader.Dispose();
@@ -180,6 +160,21 @@ namespace ChaseLabs.CLConfiguration.List
             if (GetConfigByKey(config.Key) == null)
             {
                 ConfigList.Add(config);
+            }
+
+            Write();
+        }
+
+        /// <summary>
+        /// Adds a Config to this ConfigManager using the Key and Value
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="value"></param>
+        public void Add(string key, string value)
+        {
+            if (GetConfigByKey(key) == null)
+            {
+                ConfigList.Add(new Config(key, value, this));
             }
 
             Write();

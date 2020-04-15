@@ -13,6 +13,8 @@ namespace ChaseLabs.CLConfiguration.Object
     /// </summary>
     public class Config : IConfig
     {
+        public ConfigManager Manager;
+
         private string _value;
         private readonly string _key;
         /// <summary>
@@ -29,7 +31,7 @@ namespace ChaseLabs.CLConfiguration.Object
             {
 
                 _value = value;
-                ConfigManager.Singleton.Write();
+                Manager.Write();
             }
         }
         /// <summary>
@@ -37,10 +39,11 @@ namespace ChaseLabs.CLConfiguration.Object
         /// </summary>
         /// <param name="_key"></param>
         /// <param name="_value"></param>
-        public Config(string _key, string _value)
+        public Config(string _key, string _value, ConfigManager Manager)
         {
             this._key = _key;
             this._value = _value;
+            this.Manager = Manager;
         }
         /// <summary>
         /// Attempts to Parse the Configs Value as Int
