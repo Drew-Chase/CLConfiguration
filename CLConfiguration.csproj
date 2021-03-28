@@ -5,7 +5,7 @@
     <RootNamespace>ChaseLabs.CLConfiguration</RootNamespace>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>0.0.2</Version>
+    <Version>0.0.5</Version>
     <Authors>Drew Chase</Authors>
     <Company>Chase Labs</Company>
     <Description>A Easy to Use Config Manager</Description>
@@ -13,7 +13,7 @@
     <RepositoryUrl>https://github.com/DcmanProductions/CLConfiguration.git</RepositoryUrl>
     <RepositoryType>Git Hub</RepositoryType>
     <PackageProjectUrl>https://github.com/DcmanProductions/CLConfiguration</PackageProjectUrl>
-    <PackageReleaseNotes>Added Code Documentation</PackageReleaseNotes>
+    <PackageReleaseNotes>Added option to encrypt the output using AES256 Encryption</PackageReleaseNotes>
     <PackageId>ChaseLabs.Configuration</PackageId>
   </PropertyGroup>
 
@@ -23,6 +23,9 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <OutputPath>C:\Users\drew_\Documents\DLLs\</OutputPath>
   </PropertyGroup>
 
   <ItemGroup>

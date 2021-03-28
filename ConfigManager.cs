@@ -1,4 +1,5 @@
 ﻿using ChaseLabs.CLConfiguration.Object;
+using com.drewchaseproject.MDM.Library.Utilities;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -22,6 +23,8 @@ namespace ChaseLabs.CLConfiguration.List
         /// </summary>
         public string Name { get; set; }
 
+        public bool UseEncryption { get; private set; }
+
         /// <summary>
         /// Returns A Human Readable Version of the Config Class
         /// <para>Example:</para>
@@ -34,9 +37,9 @@ namespace ChaseLabs.CLConfiguration.List
         }
 
 
-        private List<Config> ConfigList;
+        private readonly List<Config> ConfigList;
 
-        private string _path;
+        private readonly string _path;
         /// <summary>
         /// Returns the Current Path of the Config File
         /// </summary>
@@ -46,8 +49,10 @@ namespace ChaseLabs.CLConfiguration.List
         /// Initializes the Config Manager with a File Path
         /// </summary>
         /// <param name="_path"></param>
-        public ConfigManager(string _path)
+        /// <param name="_encrypt"></param>
+        public ConfigManager(string _path, bool _encrypt = false)
         {
+            UseEncryption = _encrypt;
             ConfigList = new List<Config>();
             this._path = _path;
             if (!Directory.Exists(Directory.GetParent(PATH).FullName))
@@ -170,7 +175,7 @@ namespace ChaseLabs.CLConfiguration.List
         /// </summary>
         /// <param name="key"></param>
         /// <param name="value"></param>
-        public void Add(string key, string value)
+        public void Add(string key, object value)
         {
             if (GetConfigByKey(key) == null)
             {
@@ -228,21 +233,41 @@ namespace ChaseLabs.CLConfiguration.List
             {
                 using (StreamReader reader = new StreamReader(PATH))
                 {
-                    while (!reader.EndOfStream)
+                    if (UseEncryption)
                     {
-                        string txt = reader.ReadLine();
-                        foreach (Config config in ConfigList)
+                        while (!reader.EndOfStream)
                         {
-                            if (txt.Replace("\"", "").Replace(": ", "").StartsWith(config.Key))
+                            string txt = reader.ReadLine();
+                            foreach (Config config in ConfigList)
                             {
-                                config.Value = txt.Replace(config.Key, "").Replace("\"", "").Replace(": ", "");
-                                Value += config.Value + Environment.NewLine;
+                                if (txt.Replace("\"", "").Replace(": ", "").StartsWith(config.Key))
+                                {
+                                    config.Value = txt.Replace(config.Key, "").Replace("\"", "").Replace(": ", "");
+                                    Value += config.Value + Environment.NewLine;
+                                }
+                            }
+                        }
+
+                        reader.Dispose();
+                        reader.Close();
+                    }
+                    else
+                    {
+                        string content = Crypto.DecryptStringAES(reader.ReadToEnd());
+                        foreach (string s in content.Split('\n'))
+                        {
+                            string txt = s.Replace("\n", "");
+
+                            foreach (Config config in ConfigList)
+                            {
+                                if (txt.Replace("\"", "").Replace(": ", "").StartsWith(config.Key))
+                                {
+                                    config.Value = txt.Replace(config.Key, "").Replace("\"", "").Replace(": ", "");
+                                    Value += config.Value + Environment.NewLine;
+                                }
                             }
                         }
                     }
-
-                    reader.Dispose();
-                    reader.Close();
                 }
                 return Value;
             }
@@ -259,16 +284,18 @@ namespace ChaseLabs.CLConfiguration.List
         /// <para>Example:</para>
         /// <code>Key = Example<para>Value = Input<para>Output = "Example": "Input"</para></para></code>
         /// </summary>
-        public void Write()
+        internal void Write()
         {
             try
             {
+                string cfg = "";
+                foreach (Config config in ConfigList)
+                {
+                    cfg += $"\"{config.Key}\": \"{config.Value}\"\n";
+                }
                 using (StreamWriter writer = new StreamWriter(PATH))
                 {
-                    foreach (Config config in ConfigList)
-                    {
-                        writer.WriteLine($"\"{config.Key}\": \"{config.Value}\"");
-                    }
+                    writer.Write(UseEncryption ? Crypto.EncryptStringAES(cfg) : cfg);
                     writer.Flush();
                     writer.Dispose();
                     writer.Close();

@@ -33,6 +33,12 @@
             Returns the Current Path of the Config File
             </summary>
         </member>
+        <member name="M:ChaseLabs.CLConfiguration.List.ConfigManager.#ctor(System.String)">
+            <summary>
+            Initializes the Config Manager with a File Path
+            </summary>
+            <param name="_path"></param>
+        </member>
         <member name="M:ChaseLabs.CLConfiguration.List.ConfigManager.FindPreExistingConfigs">
             <summary>
             Loads the Config File and PreExisting Configs
