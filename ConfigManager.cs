@@ -150,11 +150,6 @@ namespace ChaseLabs.CLConfiguration.List
             }
         }
 
-        private T CastObject<T>(object input)
-        {
-            return (T)input;
-        }
-
         /// <summary>
         /// Returns the Number of Config Inputs
         /// </summary>
