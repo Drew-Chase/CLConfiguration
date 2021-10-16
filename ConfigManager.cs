@@ -23,6 +23,14 @@ namespace ChaseLabs.CLConfiguration.List
         /// </summary>
         public string Name { get; set; }
 
+        /// <summary>
+        /// The Password used to Encrypt the Config File
+        /// </summary>
+        public string EncryptionPassword { get; private set; }
+
+        /// <summary>
+        /// If true the Config File will be encrypted.
+        /// </summary>
         public bool UseEncryption { get; private set; }
 
         /// <summary>
@@ -36,36 +44,53 @@ namespace ChaseLabs.CLConfiguration.List
             return $"{Name} Config File";
         }
 
-
         private readonly List<Config> ConfigList;
+        private string _path = string.Empty;
 
-        private readonly string _path;
         /// <summary>
         /// Returns the Current Path of the Config File
         /// </summary>
-        public string PATH => _path;
+        public string PATH
+        {
+            get
+            {
+                return _path;
+            }
+            set
+            {
+                Directory.CreateDirectory(Directory.GetParent(value).FullName);
+                if (!File.Exists(value))
+                {
+                    File.CreateText(value).Close();
+                }
+                _path = value;
+            }
+        }
 
         /// <summary>
         /// Initializes the Config Manager with a File Path
         /// </summary>
-        /// <param name="_path"></param>
-        /// <param name="_encrypt"></param>
-        public ConfigManager(string _path, bool _encrypt = false)
+        /// <param name="file">File Path</param>
+        public ConfigManager(string file)
         {
-            UseEncryption = _encrypt;
+            UseEncryption = false;
             ConfigList = new List<Config>();
-            this._path = _path;
-            if (!Directory.Exists(Directory.GetParent(PATH).FullName))
-            {
-                Directory.CreateDirectory(Directory.GetParent(PATH).FullName);
-                System.Threading.Thread.Sleep(1000);
-            }
+            PATH = file;
+            FindPreExistingConfigs();
+        }
 
-            if (!File.Exists(PATH))
-            {
-                File.CreateText(PATH).Close();
-            }
-
+        /// <summary>
+        /// Initializes the Config Manager with a File Path and Encryption
+        /// </summary>
+        /// <param name="file"></param>
+        /// <param name="useencryption"></param>
+        /// <param name="encryption_password">Default is Machine Name</param>
+        public ConfigManager(string file, bool useencryption, string encryption_password = "")
+        {
+            UseEncryption = useencryption;
+            EncryptionPassword = encryption_password;
+            ConfigList = new List<Config>();
+            PATH = file;
             FindPreExistingConfigs();
         }
 
@@ -76,10 +101,15 @@ namespace ChaseLabs.CLConfiguration.List
         {
             using (StreamReader reader = new StreamReader(PATH))
             {
-                while (!reader.EndOfStream)
+                string text = reader.ReadToEnd();
+                if (UseEncryption)
+                    text = Crypto.DecryptStringAES(text);
+                string[] items = text.Split('\n');
+                //while (!reader.EndOfStream)
+                foreach (string item in items)
                 {
                     string key = "", value = "";
-                    string txt = reader.ReadLine();
+                    string txt = item.Replace("\n", "");
                     if (txt.Split(':').Length == 2)
                     {
                         key = txt.Split(':')[0];
@@ -106,13 +136,23 @@ namespace ChaseLabs.CLConfiguration.List
                     {
                         return;
                     }
-
-                    Add(key.Replace("\"", "").Replace(": ", "").Replace(" \"", ""), value.Replace(": ", "").Replace("\" ", "").Replace(" \"", "").Replace("\"", ""));
+                    value = value.Replace(": ", "").Replace("\" ", "").Replace(" \"", "").Replace("\"", "");
+                    if (value.First() == '(')
+                    {
+                        string type = value.Substring(1, value.IndexOf(')') - 1);
+                        value = value.Replace($"({type})", "");
+                        Add(key.Replace("\"", "").Replace(": ", "").Replace(" \"", ""), Convert.ChangeType(value, Type.GetType(type)));
+                    }
                 }
 
                 reader.Dispose();
                 reader.Close();
             }
+        }
+
+        private T CastObject<T>(object input)
+        {
+            return (T)input;
         }
 
         /// <summary>
@@ -135,6 +175,7 @@ namespace ChaseLabs.CLConfiguration.List
             ConfigList.ForEach((n) => { if (n.Key == value) { cfg = n; } });
             return cfg;
         }
+
         /// <summary>
         /// Returns The Config Input based on Config Value.
         /// </summary>
@@ -146,6 +187,7 @@ namespace ChaseLabs.CLConfiguration.List
             ConfigList.ForEach((n) => { if (n.Value == value) { cfg = n; } });
             return cfg;
         }
+
         /// <summary>
         /// Returns The Config Input based on Config Index.
         /// </summary>
@@ -175,7 +217,7 @@ namespace ChaseLabs.CLConfiguration.List
         /// </summary>
         /// <param name="key"></param>
         /// <param name="value"></param>
-        public void Add(string key, object value)
+        public void Add(string key, dynamic value)
         {
             if (GetConfigByKey(key) == null)
             {
@@ -194,6 +236,7 @@ namespace ChaseLabs.CLConfiguration.List
             ConfigList.Remove(config);
             Write();
         }
+
         /// <summary>
         /// Removes Config Input by Index
         /// </summary>
@@ -203,6 +246,7 @@ namespace ChaseLabs.CLConfiguration.List
             ConfigList.RemoveAt(index);
             Write();
         }
+
         /// <summary>
         /// Removes Config Input by Config Key
         /// </summary>
@@ -228,53 +272,33 @@ namespace ChaseLabs.CLConfiguration.List
         /// <returns></returns>
         public string Read()
         {
-            string Value = "";
+            dynamic Value = "";
             try
             {
                 using (StreamReader reader = new StreamReader(PATH))
                 {
-                    if (UseEncryption)
+                    string content = UseEncryption ? Crypto.DecryptStringAES(reader.ReadToEnd(), EncryptionPassword) : reader.ReadToEnd();
+                    foreach (string s in content.Split('\n'))
                     {
-                        while (!reader.EndOfStream)
-                        {
-                            string txt = reader.ReadLine();
-                            foreach (Config config in ConfigList)
-                            {
-                                if (txt.Replace("\"", "").Replace(": ", "").StartsWith(config.Key))
-                                {
-                                    config.Value = txt.Replace(config.Key, "").Replace("\"", "").Replace(": ", "");
-                                    Value += config.Value + Environment.NewLine;
-                                }
-                            }
-                        }
+                        string txt = s.Replace("\n", "");
 
-                        reader.Dispose();
-                        reader.Close();
-                    }
-                    else
-                    {
-                        string content = Crypto.DecryptStringAES(reader.ReadToEnd());
-                        foreach (string s in content.Split('\n'))
+                        foreach (Config config in ConfigList)
                         {
-                            string txt = s.Replace("\n", "");
-
-                            foreach (Config config in ConfigList)
+                            if (txt.Replace("\"", "").Replace(": ", "").StartsWith(config.Key))
                             {
-                                if (txt.Replace("\"", "").Replace(": ", "").StartsWith(config.Key))
-                                {
-                                    config.Value = txt.Replace(config.Key, "").Replace("\"", "").Replace(": ", "");
-                                    Value += config.Value + Environment.NewLine;
-                                }
+                                config.Value = txt.Replace(config.Key, "").Replace("\"", "").Replace(": ", "");
+                                Value += config.Value + Environment.NewLine;
                             }
                         }
                     }
+                    reader.Dispose();
+                    reader.Close();
                 }
                 return Value;
             }
             catch (Exception e)
             {
                 Console.WriteLine(e.StackTrace);
-                //System.Threading.Thread.Sleep(3 * 1000);
                 return Read();
             }
         }
@@ -291,11 +315,11 @@ namespace ChaseLabs.CLConfiguration.List
                 string cfg = "";
                 foreach (Config config in ConfigList)
                 {
-                    cfg += $"\"{config.Key}\": \"{config.Value}\"\n";
+                    cfg += $"\"{config.Key}\": \"({config.Value.GetType()}){config.Value}\"\n";
                 }
                 using (StreamWriter writer = new StreamWriter(PATH))
                 {
-                    writer.Write(UseEncryption ? Crypto.EncryptStringAES(cfg) : cfg);
+                    writer.Write(UseEncryption ? Crypto.EncryptStringAES(cfg, EncryptionPassword) : cfg);
                     writer.Flush();
                     writer.Dispose();
                     writer.Close();
@@ -305,7 +329,5 @@ namespace ChaseLabs.CLConfiguration.List
             {
             }
         }
-
     }
-
 }

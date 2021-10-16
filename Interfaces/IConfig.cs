@@ -9,9 +9,10 @@
         /// Returns the Configs Key
         /// </summary>
         string Key { get; }
+
         /// <summary>
         /// Returns the Configs Value
         /// </summary>
-        string Value { get; set; }
+        dynamic Value { get; set; }
     }
 }

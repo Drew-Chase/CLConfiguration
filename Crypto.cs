@@ -7,14 +7,13 @@ namespace com.drewchaseproject.MDM.Library.Utilities
 {
     internal class Crypto
     {
-
         //While an app specific salt is not the best practice for
         //password based encryption, it's probably safe enough as long as
         //it is truly uncommon. Also too much work to alter this answer otherwise.
-        private static readonly byte[] _salt = new MD5CryptoServiceProvider().ComputeHash(new UnicodeEncoding().GetBytes(Environment.MachineName));
+        //private static readonly byte[] _salt = new MD5CryptoServiceProvider().ComputeHash(new UnicodeEncoding().GetBytes(Environment.MachineName));
 
         /// <summary>
-        /// Encrypt the given string using AES.  The string can be decrypted using 
+        /// Encrypt the given string using AES.  The string can be decrypted using
         /// DecryptStringAES().  The sharedSecret parameters must match.
         /// </summary>
         /// <param name="plainText">The text to encrypt.</param>
@@ -37,7 +36,7 @@ namespace com.drewchaseproject.MDM.Library.Utilities
             try
             {
                 // generate the key from the shared secret and the salt
-                Rfc2898DeriveBytes key = new Rfc2898DeriveBytes(sharedSecret, _salt);
+                Rfc2898DeriveBytes key = new Rfc2898DeriveBytes(sharedSecret, new MD5CryptoServiceProvider().ComputeHash(new UnicodeEncoding().GetBytes(sharedSecret)));
 
                 // Create a RijndaelManaged object
                 aesAlg = new RijndaelManaged();
@@ -77,7 +76,7 @@ namespace com.drewchaseproject.MDM.Library.Utilities
         }
 
         /// <summary>
-        /// Decrypt the given string.  Assumes the string was encrypted using 
+        /// Decrypt the given string.  Assumes the string was encrypted using
         /// EncryptStringAES(), using an identical sharedSecret.
         /// </summary>
         /// <param name="cipherText">The text to decrypt.</param>
@@ -98,7 +97,6 @@ namespace com.drewchaseproject.MDM.Library.Utilities
             {
                 sharedSecret = Environment.MachineName;
             }
-
             // Declare the RijndaelManaged object
             // used to decrypt the data.
             RijndaelManaged aesAlg = null;
@@ -110,9 +108,9 @@ namespace com.drewchaseproject.MDM.Library.Utilities
             try
             {
                 // generate the key from the shared secret and the salt
-                Rfc2898DeriveBytes key = new Rfc2898DeriveBytes(sharedSecret, _salt);
+                Rfc2898DeriveBytes key = new Rfc2898DeriveBytes(sharedSecret, new MD5CryptoServiceProvider().ComputeHash(new UnicodeEncoding().GetBytes(sharedSecret)));
 
-                // Create the streams used for decryption.                
+                // Create the streams used for decryption.
                 byte[] bytes = Convert.FromBase64String(cipherText);
                 using (MemoryStream msDecrypt = new MemoryStream(bytes))
                 {
@@ -128,7 +126,6 @@ namespace com.drewchaseproject.MDM.Library.Utilities
                     {
                         using (StreamReader srDecrypt = new StreamReader(csDecrypt))
                         {
-
                             // Read the decrypted bytes from the decrypting stream
                             // and place them in a string.
                             plaintext = srDecrypt.ReadToEnd();

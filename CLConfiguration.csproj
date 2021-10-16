@@ -5,7 +5,7 @@
     <RootNamespace>ChaseLabs.CLConfiguration</RootNamespace>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>0.0.5</Version>
+    <Version>0.1.1</Version>
     <Authors>Drew Chase</Authors>
     <Company>Chase Labs</Company>
     <Description>A Easy to Use Config Manager</Description>
@@ -13,7 +13,7 @@
     <RepositoryUrl>https://github.com/DcmanProductions/CLConfiguration.git</RepositoryUrl>
     <RepositoryType>Git Hub</RepositoryType>
     <PackageProjectUrl>https://github.com/DcmanProductions/CLConfiguration</PackageProjectUrl>
-    <PackageReleaseNotes>Added option to encrypt the output using AES256 Encryption</PackageReleaseNotes>
+    <PackageReleaseNotes>Fixed issue where when encrypting, pre existing configs were not loading</PackageReleaseNotes>
     <PackageId>ChaseLabs.Configuration</PackageId>
   </PropertyGroup>
 
@@ -31,6 +31,10 @@
   <ItemGroup>
     <None Remove=".gitignore" />
     <None Remove="LICENSE" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
   </ItemGroup>
 
 </Project>
