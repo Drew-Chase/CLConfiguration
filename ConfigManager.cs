@@ -8,20 +8,51 @@ using System.Linq;
 namespace ChaseLabs.CLConfiguration.List
 {
     /// <summary>
-    /// <para>
-    /// Author: Drew Chase
-    /// </para>
-    /// <para>
-    /// Company: Chase Labs
-    /// </para>
+    /// <para> Author: Drew Chase </para>
+    /// <para> Company: Chase Labs </para>
     /// </summary>
     public class ConfigManager
     {
+        #region Private Fields
+
+        private readonly List<Config> ConfigList;
+
+        private string _path = string.Empty;
+
+        #endregion Private Fields
+
+        #region Public Constructors
+
         /// <summary>
-        /// Sets the Name of the Config
-        /// <para>Good if You have multiple Configs</para>
+        /// Initializes the Config Manager with a File Path
         /// </summary>
-        public string Name { get; set; }
+        /// <param name="file"> File Path </param>
+        public ConfigManager(string file)
+        {
+            UseEncryption = false;
+            ConfigList = new List<Config>();
+            PATH = file;
+            FindPreExistingConfigs();
+        }
+
+        /// <summary>
+        /// Initializes the Config Manager with a File Path and Encryption
+        /// </summary>
+        /// <param name="file">                </param>
+        /// <param name="useencryption">       </param>
+        /// <param name="encryption_password"> Default is Machine Name </param>
+        public ConfigManager(string file, bool useencryption, string encryption_password = "")
+        {
+            UseEncryption = useencryption;
+            EncryptionPassword = encryption_password;
+            ConfigList = new List<Config>();
+            PATH = file;
+            FindPreExistingConfigs();
+        }
+
+        #endregion Public Constructors
+
+        #region Public Properties
 
         /// <summary>
         /// The Password used to Encrypt the Config File
@@ -29,23 +60,10 @@ namespace ChaseLabs.CLConfiguration.List
         public string EncryptionPassword { get; private set; }
 
         /// <summary>
-        /// If true the Config File will be encrypted.
+        /// Sets the Name of the Config
+        /// <para> Good if You have multiple Configs </para>
         /// </summary>
-        public bool UseEncryption { get; private set; }
-
-        /// <summary>
-        /// Returns A Human Readable Version of the Config Class
-        /// <para>Example:</para>
-        /// <code>Default Config File</code>
-        /// </summary>
-        /// <returns></returns>
-        public override string ToString()
-        {
-            return $"{Name} Config File";
-        }
-
-        private readonly List<Config> ConfigList;
-        private string _path = string.Empty;
+        public string Name { get; set; }
 
         /// <summary>
         /// Returns the Current Path of the Config File
@@ -68,30 +86,41 @@ namespace ChaseLabs.CLConfiguration.List
         }
 
         /// <summary>
-        /// Initializes the Config Manager with a File Path
+        /// If true the Config File will be encrypted.
         /// </summary>
-        /// <param name="file">File Path</param>
-        public ConfigManager(string file)
+        public bool UseEncryption { get; private set; }
+
+        #endregion Public Properties
+
+        #region Public Methods
+
+        /// <summary>
+        /// Adds a Config Input by Config Object
+        /// </summary>
+        /// <param name="config"> </param>
+        public void Add(Config config)
         {
-            UseEncryption = false;
-            ConfigList = new List<Config>();
-            PATH = file;
-            FindPreExistingConfigs();
+            if (GetConfigByKey(config.Key) == null)
+            {
+                ConfigList.Add(config);
+            }
+
+            Write();
         }
 
         /// <summary>
-        /// Initializes the Config Manager with a File Path and Encryption
+        /// Adds a Config to this ConfigManager using the Key and Value
         /// </summary>
-        /// <param name="file"></param>
-        /// <param name="useencryption"></param>
-        /// <param name="encryption_password">Default is Machine Name</param>
-        public ConfigManager(string file, bool useencryption, string encryption_password = "")
+        /// <param name="key">   </param>
+        /// <param name="value"> </param>
+        public void Add(string key, dynamic value)
         {
-            UseEncryption = useencryption;
-            EncryptionPassword = encryption_password;
-            ConfigList = new List<Config>();
-            PATH = file;
-            FindPreExistingConfigs();
+            if (GetConfigByKey(key) == null)
+            {
+                ConfigList.Add(new Config(key, value, this));
+            }
+
+            Write();
         }
 
         /// <summary>
@@ -105,6 +134,7 @@ namespace ChaseLabs.CLConfiguration.List
                 if (UseEncryption)
                     text = Crypto.DecryptStringAES(text);
                 string[] items = text.Split('\n');
+
                 //while (!reader.EndOfStream)
                 foreach (string item in items)
                 {
@@ -151,19 +181,20 @@ namespace ChaseLabs.CLConfiguration.List
         }
 
         /// <summary>
-        /// Returns the Number of Config Inputs
+        /// Returns The Config Input based on Config Index.
         /// </summary>
-        /// <returns></returns>
-        public int Size()
+        /// <param name="index"> </param>
+        /// <returns> </returns>
+        public Config GetConfigByIndex(int index)
         {
-            return ConfigList.Count;
+            return ConfigList.ElementAtOrDefault(index);
         }
 
         /// <summary>
         /// Returns The Config Input based on Config Key.
         /// </summary>
-        /// <param name="value"></param>
-        /// <returns></returns>
+        /// <param name="value"> </param>
+        /// <returns> </returns>
         public Config GetConfigByKey(string value)
         {
             Config cfg = null;
@@ -174,8 +205,8 @@ namespace ChaseLabs.CLConfiguration.List
         /// <summary>
         /// Returns The Config Input based on Config Value.
         /// </summary>
-        /// <param name="value"></param>
-        /// <returns></returns>
+        /// <param name="value"> </param>
+        /// <returns> </returns>
         public Config GetConfigByValue(string value)
         {
             Config cfg = null;
@@ -184,78 +215,9 @@ namespace ChaseLabs.CLConfiguration.List
         }
 
         /// <summary>
-        /// Returns The Config Input based on Config Index.
-        /// </summary>
-        /// <param name="index"></param>
-        /// <returns></returns>
-        public Config GetConfigByIndex(int index)
-        {
-            return ConfigList.ElementAtOrDefault(index);
-        }
-
-        /// <summary>
-        /// Adds a Config Input by Config Object
-        /// </summary>
-        /// <param name="config"></param>
-        public void Add(Config config)
-        {
-            if (GetConfigByKey(config.Key) == null)
-            {
-                ConfigList.Add(config);
-            }
-
-            Write();
-        }
-
-        /// <summary>
-        /// Adds a Config to this ConfigManager using the Key and Value
-        /// </summary>
-        /// <param name="key"></param>
-        /// <param name="value"></param>
-        public void Add(string key, dynamic value)
-        {
-            if (GetConfigByKey(key) == null)
-            {
-                ConfigList.Add(new Config(key, value, this));
-            }
-
-            Write();
-        }
-
-        /// <summary>
-        /// Removes Config Input by Conifg Object
-        /// </summary>
-        /// <param name="config"></param>
-        public void Remove(Config config)
-        {
-            ConfigList.Remove(config);
-            Write();
-        }
-
-        /// <summary>
-        /// Removes Config Input by Index
-        /// </summary>
-        /// <param name="index"></param>
-        public void Remove(int index)
-        {
-            ConfigList.RemoveAt(index);
-            Write();
-        }
-
-        /// <summary>
-        /// Removes Config Input by Config Key
-        /// </summary>
-        /// <param name="key"></param>
-        public void Remove(string key)
-        {
-            ConfigList.Remove(GetConfigByKey(key));
-            Write();
-        }
-
-        /// <summary>
         /// Returns a ArrayList of all Config Objects
         /// </summary>
-        /// <returns></returns>
+        /// <returns> </returns>
         public List<Config> List()
         {
             return ConfigList;
@@ -264,7 +226,7 @@ namespace ChaseLabs.CLConfiguration.List
         /// <summary>
         /// Reads the Config File and Updates the Current Config Inputs
         /// </summary>
-        /// <returns></returns>
+        /// <returns> </returns>
         public string Read()
         {
             dynamic Value = "";
@@ -299,9 +261,63 @@ namespace ChaseLabs.CLConfiguration.List
         }
 
         /// <summary>
+        /// Removes Config Input by Conifg Object
+        /// </summary>
+        /// <param name="config"> </param>
+        public void Remove(Config config)
+        {
+            ConfigList.Remove(config);
+            Write();
+        }
+
+        /// <summary>
+        /// Removes Config Input by Index
+        /// </summary>
+        /// <param name="index"> </param>
+        public void Remove(int index)
+        {
+            ConfigList.RemoveAt(index);
+            Write();
+        }
+
+        /// <summary>
+        /// Removes Config Input by Config Key
+        /// </summary>
+        /// <param name="key"> </param>
+        public void Remove(string key)
+        {
+            ConfigList.Remove(GetConfigByKey(key));
+            Write();
+        }
+
+        /// <summary>
+        /// Returns the Number of Config Inputs
+        /// </summary>
+        /// <returns> </returns>
+        public int Size()
+        {
+            return ConfigList.Count;
+        }
+
+        /// <summary>
+        /// Returns A Human Readable Version of the Config Class
+        /// <para> Example:  </para>
+        /// <code>Default Config File </code>
+        /// </summary>
+        /// <returns> </returns>
+        public override string ToString()
+        {
+            return $"{Name} Config File";
+        }
+
+        #endregion Public Methods
+
+        #region Internal Methods
+
+        /// <summary>
         /// Writes to file the Current List of Config Objects
-        /// <para>Example:</para>
-        /// <code>Key = Example<para>Value = Input<para>Output = "Example": "Input"</para></para></code>
+        /// <para> Example:  </para>
+        /// <code>Key = Example<para>Value = Input<para>Output = "Example": "Input"</para></para> </code>
         /// </summary>
         internal void Write()
         {
@@ -324,5 +340,7 @@ namespace ChaseLabs.CLConfiguration.List
             {
             }
         }
+
+        #endregion Internal Methods
     }
 }

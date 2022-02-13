@@ -12,12 +12,88 @@ namespace com.drewchaseproject.MDM.Library.Utilities
         //it is truly uncommon. Also too much work to alter this answer otherwise.
         //private static readonly byte[] _salt = new MD5CryptoServiceProvider().ComputeHash(new UnicodeEncoding().GetBytes(Environment.MachineName));
 
+        #region Internal Methods
+
         /// <summary>
-        /// Encrypt the given string using AES.  The string can be decrypted using
-        /// DecryptStringAES().  The sharedSecret parameters must match.
+        /// Decrypt the given string. Assumes the string was encrypted using EncryptStringAES(),
+        /// using an identical sharedSecret.
         /// </summary>
-        /// <param name="plainText">The text to encrypt.</param>
-        /// <param name="sharedSecret">A password used to generate a key for encryption. Default is Machine Name</param>
+        /// <param name="cipherText">   The text to decrypt. </param>
+        /// <param name="sharedSecret">
+        /// A password used to generate a key for decryption. Default is Machine Name
+        /// </param>
+        internal static string DecryptStringAES(string cipherText, string sharedSecret = "")
+        {
+            if (string.IsNullOrWhiteSpace(cipherText))
+            {
+                return "";
+            }
+
+            if (string.IsNullOrEmpty(cipherText))
+            {
+                throw new ArgumentNullException("cipherText");
+            }
+
+            if (string.IsNullOrEmpty(sharedSecret))
+            {
+                sharedSecret = Environment.MachineName;
+            }
+
+            // Declare the RijndaelManaged object used to decrypt the data.
+            RijndaelManaged aesAlg = null;
+
+            // Declare the string used to hold the decrypted text.
+            string plaintext = null;
+
+            try
+            {
+                // generate the key from the shared secret and the salt
+                Rfc2898DeriveBytes key = new Rfc2898DeriveBytes(sharedSecret, new MD5CryptoServiceProvider().ComputeHash(new UnicodeEncoding().GetBytes(sharedSecret)));
+
+                // Create the streams used for decryption.
+                byte[] bytes = Convert.FromBase64String(cipherText);
+                using (MemoryStream msDecrypt = new MemoryStream(bytes))
+                {
+                    // Create a RijndaelManaged object with the specified key and IV.
+                    aesAlg = new RijndaelManaged();
+                    aesAlg.Key = key.GetBytes(aesAlg.KeySize / 8);
+
+                    // Get the initialization vector from the encrypted stream
+                    aesAlg.IV = ReadByteArray(msDecrypt);
+
+                    // Create a decrytor to perform the stream transform.
+                    ICryptoTransform decryptor = aesAlg.CreateDecryptor(aesAlg.Key, aesAlg.IV);
+                    using (CryptoStream csDecrypt = new CryptoStream(msDecrypt, decryptor, CryptoStreamMode.Read))
+                    {
+                        using (StreamReader srDecrypt = new StreamReader(csDecrypt))
+                        {
+                            // Read the decrypted bytes from the decrypting stream and place them in
+                            // a string.
+                            plaintext = srDecrypt.ReadToEnd();
+                        }
+                    }
+                }
+            }
+            finally
+            {
+                // Clear the RijndaelManaged object.
+                if (aesAlg != null)
+                {
+                    aesAlg.Clear();
+                }
+            }
+
+            return plaintext;
+        }
+
+        /// <summary>
+        /// Encrypt the given string using AES. The string can be decrypted using
+        /// DecryptStringAES(). The sharedSecret parameters must match.
+        /// </summary>
+        /// <param name="plainText">    The text to encrypt. </param>
+        /// <param name="sharedSecret">
+        /// A password used to generate a key for encryption. Default is Machine Name
+        /// </param>
         internal static string EncryptStringAES(string plainText, string sharedSecret = "")
         {
             if (string.IsNullOrEmpty(plainText))
@@ -75,75 +151,9 @@ namespace com.drewchaseproject.MDM.Library.Utilities
             return outStr;
         }
 
-        /// <summary>
-        /// Decrypt the given string.  Assumes the string was encrypted using
-        /// EncryptStringAES(), using an identical sharedSecret.
-        /// </summary>
-        /// <param name="cipherText">The text to decrypt.</param>
-        /// <param name="sharedSecret">A password used to generate a key for decryption. Default is Machine Name</param>
-        internal static string DecryptStringAES(string cipherText, string sharedSecret = "")
-        {
-            if (string.IsNullOrWhiteSpace(cipherText))
-            {
-                return "";
-            }
+        #endregion Internal Methods
 
-            if (string.IsNullOrEmpty(cipherText))
-            {
-                throw new ArgumentNullException("cipherText");
-            }
-
-            if (string.IsNullOrEmpty(sharedSecret))
-            {
-                sharedSecret = Environment.MachineName;
-            }
-            // Declare the RijndaelManaged object
-            // used to decrypt the data.
-            RijndaelManaged aesAlg = null;
-
-            // Declare the string used to hold
-            // the decrypted text.
-            string plaintext = null;
-
-            try
-            {
-                // generate the key from the shared secret and the salt
-                Rfc2898DeriveBytes key = new Rfc2898DeriveBytes(sharedSecret, new MD5CryptoServiceProvider().ComputeHash(new UnicodeEncoding().GetBytes(sharedSecret)));
-
-                // Create the streams used for decryption.
-                byte[] bytes = Convert.FromBase64String(cipherText);
-                using (MemoryStream msDecrypt = new MemoryStream(bytes))
-                {
-                    // Create a RijndaelManaged object
-                    // with the specified key and IV.
-                    aesAlg = new RijndaelManaged();
-                    aesAlg.Key = key.GetBytes(aesAlg.KeySize / 8);
-                    // Get the initialization vector from the encrypted stream
-                    aesAlg.IV = ReadByteArray(msDecrypt);
-                    // Create a decrytor to perform the stream transform.
-                    ICryptoTransform decryptor = aesAlg.CreateDecryptor(aesAlg.Key, aesAlg.IV);
-                    using (CryptoStream csDecrypt = new CryptoStream(msDecrypt, decryptor, CryptoStreamMode.Read))
-                    {
-                        using (StreamReader srDecrypt = new StreamReader(csDecrypt))
-                        {
-                            // Read the decrypted bytes from the decrypting stream
-                            // and place them in a string.
-                            plaintext = srDecrypt.ReadToEnd();
-                        }
-                    }
-                }
-            }
-            finally
-            {
-                // Clear the RijndaelManaged object.
-                if (aesAlg != null)
-                {
-                    aesAlg.Clear();
-                }
-            }
-
-            return plaintext;
-        }
+        #region Private Methods
 
         private static byte[] ReadByteArray(Stream s)
         {
@@ -161,5 +171,7 @@ namespace com.drewchaseproject.MDM.Library.Utilities
 
             return buffer;
         }
+
+        #endregion Private Methods
     }
 }

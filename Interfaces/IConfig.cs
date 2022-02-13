@@ -5,6 +5,8 @@
     /// </summary>
     public interface IConfig
     {
+        #region Public Properties
+
         /// <summary>
         /// Returns the Configs Key
         /// </summary>
@@ -14,5 +16,7 @@
         /// Returns the Configs Value
         /// </summary>
         dynamic Value { get; set; }
+
+        #endregion Public Properties
     }
 }
