@@ -54,7 +54,7 @@ namespace ChaseLabs.CLConfiguration.Object
             set
             {
                 _value = value;
-                Manager.Write();
+                Manager.outdated = true;
             }
         }
 

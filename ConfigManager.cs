@@ -13,6 +13,12 @@ namespace ChaseLabs.CLConfiguration.List
     /// </summary>
     public class ConfigManager
     {
+        #region Internal Fields
+
+        internal bool outdated = false;
+
+        #endregion Internal Fields
+
         #region Private Fields
 
         private readonly List<Config> ConfigList;
@@ -26,14 +32,12 @@ namespace ChaseLabs.CLConfiguration.List
         /// <summary>
         /// Initializes the Config Manager with a File Path
         /// </summary>
-        /// <param name="file"> File Path </param>
-        public ConfigManager(string file)
-        {
-            UseEncryption = false;
-            ConfigList = new List<Config>();
-            PATH = file;
-            FindPreExistingConfigs();
-        }
+        /// <param name="file">          File Path </param>
+        /// <param name="save_interval">
+        /// How often the cached config values is written to file in milliseconds, default is 5
+        /// seconds or 5000ms
+        /// </param>
+        public ConfigManager(string file, int save_interval = 5000) => new ConfigManager(file: file, useencryption: false, save_interval: save_interval);
 
         /// <summary>
         /// Initializes the Config Manager with a File Path and Encryption
@@ -41,13 +45,30 @@ namespace ChaseLabs.CLConfiguration.List
         /// <param name="file">                </param>
         /// <param name="useencryption">       </param>
         /// <param name="encryption_password"> Default is Machine Name </param>
-        public ConfigManager(string file, bool useencryption, string encryption_password = "")
+        /// <param name="save_interval">      
+        /// How often the cached config values is written to file in milliseconds, default is 5
+        /// seconds or 5000ms
+        /// </param>
+        public ConfigManager(string file, bool useencryption, string encryption_password = "", int save_interval = 5000)
         {
             UseEncryption = useencryption;
             EncryptionPassword = encryption_password;
             ConfigList = new List<Config>();
             PATH = file;
             FindPreExistingConfigs();
+            System.Timers.Timer timer = new()
+            {
+                AutoReset = true,
+                Interval = save_interval,
+                Enabled = true,
+            };
+            timer.Elapsed += (s, e) =>
+            {
+                if (outdated)
+                {
+                    Write();
+                }
+            };
         }
 
         #endregion Public Constructors
@@ -98,11 +119,14 @@ namespace ChaseLabs.CLConfiguration.List
         /// Adds a Config Input by Config Object
         /// </summary>
         /// <param name="config"> </param>
-        public void Add(Config config)
+        public void Add(params Config[] config)
         {
-            if (GetConfigByKey(config.Key) == null)
+            foreach (var configItem in config)
             {
-                ConfigList.Add(config);
+                if (GetConfigByKey(configItem.Key) == null)
+                {
+                    ConfigList.Add(configItem);
+                }
             }
 
             Write();
@@ -312,35 +336,42 @@ namespace ChaseLabs.CLConfiguration.List
 
         #endregion Public Methods
 
-        #region Internal Methods
+        #region Private Methods
 
         /// <summary>
         /// Writes to file the Current List of Config Objects
         /// <para> Example:  </para>
         /// <code>Key = Example<para>Value = Input<para>Output = "Example": "Input"</para></para> </code>
         /// </summary>
-        internal void Write()
+        private void Write()
         {
+            string cfg = "";
+            foreach (Config config in ConfigList)
+            {
+                cfg += $"\"{config.Key}\": \"({config.Value.GetType()}){config.Value}\"\n";
+            }
+            StreamWriter writer = null;
             try
             {
-                string cfg = "";
-                foreach (Config config in ConfigList)
+                writer = new(new FileInfo(PATH).Open(FileMode.OpenOrCreate, FileAccess.Write, FileShare.ReadWrite));
+                writer.Write(UseEncryption ? Crypto.EncryptStringAES(cfg, EncryptionPassword) : cfg);
+                outdated = false;
+            }
+            catch (IOException)
+            {
+                outdated = true;
+            }
+            finally
+            {
+                if (writer != null)
                 {
-                    cfg += $"\"{config.Key}\": \"({config.Value.GetType()}){config.Value}\"\n";
-                }
-                using (StreamWriter writer = new StreamWriter(PATH))
-                {
-                    writer.Write(UseEncryption ? Crypto.EncryptStringAES(cfg, EncryptionPassword) : cfg);
                     writer.Flush();
                     writer.Dispose();
                     writer.Close();
                 }
             }
-            catch
-            {
-            }
         }
 
-        #endregion Internal Methods
+        #endregion Private Methods
     }
 }
