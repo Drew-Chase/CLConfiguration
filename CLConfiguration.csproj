@@ -12,7 +12,7 @@
     <RepositoryUrl>https://github.com/DcmanProductions/CLConfiguration.git</RepositoryUrl>
     <RepositoryType>Git Hub</RepositoryType>
     <PackageProjectUrl>https://github.com/DcmanProductions/CLConfiguration</PackageProjectUrl>
-    <PackageReleaseNotes>Changed Framework to .net 6.0</PackageReleaseNotes>
+    <PackageReleaseNotes>Changed Framework to .net 6.0, added schedule to file writing</PackageReleaseNotes>
     <PackageId>ChaseLabs.Configuration</PackageId>
   </PropertyGroup>
 
