@@ -24,31 +24,29 @@ The First Value of the Config Object is the `Key` and the second value is the `V
 For the initial `Value` should be the default value.
 It will be overruled if a config entry is found.
 
+You do NOT need to create a config item, you can just call GetOrCreate and It will create an option
+
 ```csharp
-    Manager.Add(new Config("a string key", "text"));
-    Manager.Add(new Config("a bool key", false));
-    Manager.Add(new Config("a float key", 1.0));
-    Manager.Add(new Config("an int key", 1));
+    Manager.Add("a string key", "text");
+    Manager.Add("a bool key", false);
+    Manager.Add("a float key", 1.0);
+    Manager.Add("an int key", 1);
 ```
 
 # Getting Config Rule
-Use the Method `GetConfigByKey()` to get the specified config value.
-
-To Convert a Config Value to Bool use the `ParseBoolean()` Method
-for Float use `ParseFloat()`, integer uses `ParseInt()`, double uses `ParseDouble()`
-for string Values the Default Value will suffice.
+Use the Method `GetOrCreate([name], [default value])` to get the specified config value or have it created.
 
 ```csharp
-public string StringConfig = Manager.GetConfigByKey("a string key").Value;
+public string StringConfig = Manager.GetOrCreate("a string key", "default value").Value;
 
 
-public bool BooleanConfig = Manager.GetConfigByKey("a bool key").Value;
+public bool BooleanConfig = Manager.GetOrCreate("a bool key", false).Value;
 
 
-public float FloatConfig = Manager.GetConfigByKey("a float key").Value;
+public float FloatConfig = Manager.GetOrCreate("a float key", 0.0f).Value;
 
 
-public int IntConfig = Manager.GetConfigByKey("an int key").Value;
+public int IntConfig = Manager.GetOrCreate("an int key",0).Value;
 
 ```
 
@@ -56,11 +54,11 @@ public int IntConfig = Manager.GetConfigByKey("an int key").Value;
 By setting the Config Value Equal to an appropriate value converted to string will automatically write to the config file
 
 ```csharp
-Manager.GetConfigByKey("a string key").Value = "Hello";
+Manager.GetOrCreate("a string key", "Default Value").Value = "Hello";
 
-Manager.GetConfigByKey("a bool key").Value = true;
+Manager.GetOrCreate("a bool key", false).Value = true;
 
-Manager.GetConfigByKey("a float key").Value = 1.5;
+Manager.GetOrCreate("a float key", 0.0f).Value = 1.5;
 
-Manager.GetConfigByKey("an int key").Value = 1;
+Manager.GetOrCreate("an int key",0).Value = 1;
 ```
