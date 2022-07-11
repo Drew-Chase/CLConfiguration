@@ -4,7 +4,7 @@
     <RootNamespace>ChaseLabs.CLConfiguration</RootNamespace>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>0.1.2</Version>
+    <Version>0.1.8</Version>
     <Authors>Drew Chase</Authors>
     <Company>LFInteractive</Company>
     <Description>A Easy to Use Config Manager</Description>
@@ -12,7 +12,7 @@
     <RepositoryUrl>https://github.com/DcmanProductions/CLConfiguration.git</RepositoryUrl>
     <RepositoryType>Git Hub</RepositoryType>
     <PackageProjectUrl>https://github.com/DcmanProductions/CLConfiguration</PackageProjectUrl>
-    <PackageReleaseNotes>Changed Framework to .net 6.0, added schedule to file writing</PackageReleaseNotes>
+    <PackageReleaseNotes>Increased performance with larger datasets</PackageReleaseNotes>
     <PackageId>ChaseLabs.Configuration</PackageId>
   </PropertyGroup>
 
@@ -36,6 +36,11 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CLMath\CLMath.csproj" />
   </ItemGroup>
 
   <ItemGroup>
