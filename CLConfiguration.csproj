@@ -4,7 +4,7 @@
     <RootNamespace>ChaseLabs.CLConfiguration</RootNamespace>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>0.1.8</Version>
+    <Version>0.1.9</Version>
     <Authors>Drew Chase</Authors>
     <Company>LFInteractive</Company>
     <Description>A Easy to Use Config Manager</Description>
@@ -35,12 +35,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="CLMath" Version="0.0.4" />
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\CLMath\CLMath.csproj" />
   </ItemGroup>
 
   <ItemGroup>
