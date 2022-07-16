@@ -1,5 +1,4 @@
-﻿using ChaseLabs.Math;
-
+﻿
 namespace ChaseLabs.CLConfiguration.Object;
 
 /// <summary>
@@ -11,7 +10,7 @@ public class Config
     #region Private Fields
 
     private dynamic _value;
-    private bool Encrypt;
+    //private bool Encrypt;
     private ConfigManager Manager;
 
     #endregion Private Fields
@@ -25,12 +24,12 @@ public class Config
     /// <param name="_value"> </param>
     /// <param name="_manager"> </param>
     /// <param name="encrypt_output"> </param>
-    internal Config(string _key, dynamic _value, ConfigManager _manager, bool encrypt_output)
+    internal Config(string _key, dynamic _value, ConfigManager _manager/*, bool encrypt_output*/)
     {
         Key = _key;
         this._value = _value;
         Manager = _manager;
-        Encrypt = encrypt_output;
+        //Encrypt = encrypt_output;
     }
 
     #endregion Internal Constructors
@@ -47,10 +46,10 @@ public class Config
     /// </summary>
     public dynamic Value
     {
-        get => Encrypt ? AESMath.DecryptStringAES(_value, Manager.EncryptionPassword) : _value;
+        get => /*Encrypt ? AESMath.DecryptStringAES(_value, Manager.EncryptionPassword) : */_value;
         set
         {
-            _value = Encrypt ? AESMath.EncryptStringAES(value, Manager.EncryptionPassword) : value;
+            _value = /*Encrypt ? AESMath.EncryptStringAES(value, Manager.EncryptionPassword) : */value;
             Manager.MarkDirty();
         }
     }

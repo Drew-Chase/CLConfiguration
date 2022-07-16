@@ -1,5 +1,4 @@
 ﻿using ChaseLabs.CLConfiguration.Object;
-using ChaseLabs.Math;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
@@ -40,7 +39,7 @@ public class ConfigManager
     /// <exception cref="ArgumentException" />
     public ConfigManager(string name, string directory, int save_interval = 5000)
     {
-        EncryptionPassword = directory;
+        //EncryptionPassword = directory;
         ConfigList = new();
         Name = name;
         Path = System.IO.Path.Combine(Directory.CreateDirectory(directory).FullName, $"{Name}.json");
@@ -72,7 +71,7 @@ public class ConfigManager
     /// <summary>
     /// The Password used to Encrypt the Config File
     /// </summary>
-    public string EncryptionPassword { get; private set; }
+    //public string EncryptionPassword { get; private set; }
 
 
     /// <summary>
@@ -89,7 +88,7 @@ public class ConfigManager
     /// <summary>
     /// If true the Config File will be encrypted.
     /// </summary>
-    public bool UseEncryption { get; private set; }
+    //public bool UseEncryption { get; private set; }
 
     #endregion Public Properties
 
@@ -108,12 +107,12 @@ public class ConfigManager
     /// <param name="default_value"> </param>
     /// <param name="encrypt_output"> if the value should be encrypted </param>
     /// <returns> </returns>
-    public Config GetOrCreate(string key, dynamic default_value, bool encrypt_output = false)
+    public Config GetOrCreate(string key, dynamic default_value/*, bool encrypt_output = false*/)
     {
         if (!ConfigList.ContainsKey(key))
         {
             MarkDirty();
-            ConfigList.Add(key, new(key, default_value, this, encrypt_output));
+            ConfigList.Add(key, new(key, default_value, this/*, encrypt_output*/));
         }
         return ConfigList[key];
     }
@@ -191,7 +190,7 @@ public class ConfigManager
         try
         {
             using StreamReader reader = new(new FileStream(Path, FileMode.Open, FileAccess.Read));
-            string content = UseEncryption ? AESMath.DecryptStringAES(reader.ReadToEnd(), EncryptionPassword) : reader.ReadToEnd();
+            string content = /*UseEncryption ? AESMath.DecryptStringAES(reader.ReadToEnd(), EncryptionPassword) :*/ reader.ReadToEnd();
             json = JsonConvert.DeserializeObject<JObject>(content);
         }
         catch (FileNotFoundException)
@@ -242,7 +241,7 @@ public class ConfigManager
             try
             {
                 writer = new(Path, false);
-                writer.Write(UseEncryption ? AESMath.EncryptStringAES(JsonConvert.SerializeObject(json), EncryptionPassword) : JsonConvert.SerializeObject(json, Formatting.Indented));
+                writer.Write(/*UseEncryption ? AESMath.EncryptStringAES(JsonConvert.SerializeObject(json), EncryptionPassword) :*/ JsonConvert.SerializeObject(json, Formatting.Indented));
                 dirty = false;
             }
             catch (IOException)

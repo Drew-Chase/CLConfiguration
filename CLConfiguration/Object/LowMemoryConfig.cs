@@ -1,5 +1,4 @@
-﻿using ChaseLabs.Math;
-using System;
+﻿using System;
 using System.IO;
 
 namespace ChaseLabs.CLConfiguration.Object;
@@ -12,7 +11,7 @@ public class LowMemoryConfig
 {
     #region Private Fields
 
-    private bool Encrypt;
+    //private bool Encrypt;
     private LowMemoryConfigManager Manager;
 
     #endregion Private Fields
@@ -26,10 +25,10 @@ public class LowMemoryConfig
     /// <param name="_value"> </param>
     /// <param name="_manager"> </param>
     /// <param name="encrypt_output"> </param>
-    internal LowMemoryConfig(string _key, dynamic _value, LowMemoryConfigManager _manager, bool encrypt_output)
+    internal LowMemoryConfig(string _key, dynamic _value, LowMemoryConfigManager _manager/*, bool encrypt_output*/)
     {
         Manager = _manager;
-        Encrypt = encrypt_output;
+        //Encrypt = encrypt_output;
         Key = _key;
 
         string path = Path.Combine(Manager.Path, $"{Key}.dat");
@@ -51,10 +50,10 @@ public class LowMemoryConfig
     /// </summary>
     public dynamic Value
     {
-        get => Encrypt ? AESMath.DecryptStringAES(Read(), Manager.EncryptionPassword) : Read();
+        get => /*Encrypt ? AESMath.DecryptStringAES(Read(), Manager.EncryptionPassword) : */Read();
         set
         {
-            Write(Encrypt ? AESMath.EncryptStringAES(value, Manager.EncryptionPassword) : value);
+            Write(/*Encrypt ? AESMath.EncryptStringAES(value, Manager.EncryptionPassword) :*/ value);
         }
     }
 

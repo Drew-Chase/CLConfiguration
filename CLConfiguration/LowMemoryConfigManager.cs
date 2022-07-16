@@ -27,7 +27,7 @@ public class LowMemoryConfigManager
     /// <exception cref="ArgumentException" />
     public LowMemoryConfigManager(string name, string directory)
     {
-        EncryptionPassword = directory;
+        //EncryptionPassword = directory;
         Path = Directory.CreateDirectory(directory).FullName;
         Name = name;
     }
@@ -39,7 +39,7 @@ public class LowMemoryConfigManager
     /// <summary>
     /// The Password used to Encrypt the Config File
     /// </summary>
-    public string EncryptionPassword { get; private set; }
+    //public string EncryptionPassword { get; private set; }
 
     /// <summary>
     /// Sets the Name of the Config
@@ -55,7 +55,7 @@ public class LowMemoryConfigManager
     /// <summary>
     /// If true the Config File will be encrypted.
     /// </summary>
-    public bool UseEncryption { get; private set; }
+    //public bool UseEncryption { get; private set; }
 
     #endregion Public Properties
 
@@ -68,9 +68,9 @@ public class LowMemoryConfigManager
     /// <param name="default_value"> </param>
     /// <param name="encrypt_output"> if the value should be encrypted </param>
     /// <returns> </returns>
-    public LowMemoryConfig GetOrCreate(string key, dynamic default_value, bool encrypt_output = false)
+    public LowMemoryConfig GetOrCreate(string key, dynamic default_value/*, bool encrypt_output = false*/)
     {
-        return new(key, default_value, this, encrypt_output);
+        return new(key, default_value, this/*, encrypt_output*/);
     }
 
     /// <summary>

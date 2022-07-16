@@ -7,7 +7,8 @@ class Program
 {
     static void Main()
     {
-        BenchmarkRunner.Run<MemoryTester>();
+        //BenchmarkRunner.Run<MemoryTester>();
+        MemoryTester.TestHumanReadable();
     }
 }
 
@@ -15,11 +16,10 @@ class Program
 public class MemoryTester
 {
     [Benchmark]
-    public void TestLowMemory()
+    public static void TestLowMemory()
     {
         try
         {
-
             LowMemoryConfigManager manager = new("Application", Path.GetFullPath("./config/Low Memory"));
             string @string = manager.GetOrCreate("string", "Hello World").Value;
             bool @bool = manager.GetOrCreate("bool", false).Value;
@@ -30,11 +30,10 @@ public class MemoryTester
         catch { }
     }
     [Benchmark]
-    public void TestHumanReadable()
+    public static void TestHumanReadable()
     {
         try
         {
-
             ConfigManager manager = new("Application", Path.GetFullPath("./config/Human Readable"));
             string @string = manager.GetOrCreate("string", "Hello World").Value;
             bool @bool = manager.GetOrCreate("bool", false).Value;
